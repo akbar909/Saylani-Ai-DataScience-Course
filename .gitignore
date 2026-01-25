@@ -1,0 +1,23 @@
+# Large files - exceeds GitHub limit
+zomato.csv
+archive.zip
+*.zip
+
+# Large datasets
+*.csv
+!cleaned_sales_data.csv
+!sales_data.csv
+
+# Python
+__pycache__/
+*.pyc
+.env
+venv/
+.venv/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db

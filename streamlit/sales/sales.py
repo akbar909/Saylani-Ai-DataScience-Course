@@ -6,7 +6,7 @@ from datetime import datetime
 
 # ============ PAGE CONFIG ============
 st.set_page_config(
-    page_title="📊 Sales Analytics Dashboard",
+    page_title="Sales Analytics Dashboard",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
