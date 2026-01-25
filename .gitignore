@@ -1,12 +1,6 @@
 # Large files - exceeds GitHub limit
 zomato.csv
 archive.zip
-*.zip
-
-# Large datasets
-*.csv
-!cleaned_sales_data.csv
-!sales_data.csv
 
 # Python
 __pycache__/
