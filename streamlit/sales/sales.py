@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import pandas as pd
 import plotly.express as px
@@ -135,25 +136,27 @@ st.markdown("""
 
 
 # ============ DATA LOADING FUNCTION ============
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_PATH = os.path.join(BASE_DIR, "cleaned_sales_data.csv")
+
 @st.cache_data
-def load_data(file):
-    """Load and preprocess the sales data"""
-    df = pd.read_csv(file, parse_dates=['Sale_Date'])
-    
+def load_data(file_path):
+    df = pd.read_csv(file_path, parse_dates=["Sale_Date"])
+
     # Calculate Profit
-    df['Profit'] = (df['Unit_Price'] - df['Unit_Cost']) * df['Quantity_Sold']
-    df['Profit_Margin'] = ((df['Unit_Price'] - df['Unit_Cost']) / df['Unit_Price'] * 100).round(2)
-    
+    df["Profit"] = (df["Unit_Price"] - df["Unit_Cost"]) * df["Quantity_Sold"]
+    df["Profit_Margin"] = (df["Unit_Price"] - df["Unit_Cost"]) / df["Unit_Price"]
+
     # Extract time features
-    df['Month'] = df['Sale_Date'].dt.to_period('M').astype(str)
-    df['Day_of_Week'] = df['Sale_Date'].dt.day_name()
-    df['Year'] = df['Sale_Date'].dt.year
-    
+    df["Month"] = df["Sale_Date"].dt.to_period("M").astype(str)
+    df["Day_of_Week"] = df["Sale_Date"].dt.day_name()
+    df["Year"] = df["Sale_Date"].dt.year
+
     return df
 
 
 # ============ LOAD DATA ============
-df = load_data('cleaned_sales_data.csv')
+df = load_data(DATA_PATH)
 
 # ============ SIDEBAR ============
 with st.sidebar:
