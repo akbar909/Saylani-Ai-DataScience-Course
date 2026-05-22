@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Market Intelligence Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Sora:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="background-glow" aria-hidden="true"></div>
+    <div class="app-shell">
+      <aside class="sidebar card reveal">
+        <div>
+          <p class="eyebrow">AI Platform</p>
+          <h1>MarketPulse</h1>
+          <p class="muted">Real-time trend analytics from your FastAPI backend.</p>
+        </div>
+
+        <nav class="nav-links">
+          <a href="#overview">Overview</a>
+          <a href="#trends">Trends</a>
+          <a href="#sentiment">Sentiment</a>
+          <a href="#search">Search</a>
+        </nav>
+
+        <div class="status">
+          <span class="status-dot"></span>
+          <span id="api-status">Checking API...</span>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header id="overview" class="card hero reveal">
+          <div>
+            <p class="eyebrow">Intelligence Summary</p>
+            <h2>See what the market is talking about</h2>
+            <p class="muted">
+              Aggregated from ingestion + processing pipeline with keyword, trend and sentiment scoring.
+            </p>
+          </div>
+          <button id="refresh-btn" class="refresh-btn">Refresh Insights</button>
+        </header>
+
+        <section class="metrics-grid reveal">
+          <article class="metric card">
+            <p>Total Raw</p>
+            <h3 id="raw-count">-</h3>
+          </article>
+          <article class="metric card">
+            <p>Total Processed</p>
+            <h3 id="processed-count">-</h3>
+          </article>
+          <article class="metric card">
+            <p>Avg Trend Score</p>
+            <h3 id="avg-trend">-</h3>
+          </article>
+          <article class="metric card">
+            <p>Growth (7d)</p>
+            <h3 id="growth">-</h3>
+          </article>
+        </section>
+
+        <section class="insights-grid">
+          <article id="trends" class="card reveal">
+            <div class="section-head">
+              <h4>Top Trending Keywords</h4>
+              <span class="chip">Last 7 Days</span>
+            </div>
+            <ul id="trends-list" class="rank-list"></ul>
+          </article>
+
+          <article id="sentiment" class="card reveal">
+            <div class="section-head">
+              <h4>Sentiment Split</h4>
+              <span class="chip">Processed Data</span>
+            </div>
+
+            <div class="sentiment-bar positive">
+              <span>Positive</span>
+              <div><i id="sentiment-positive"></i></div>
+            </div>
+            <div class="sentiment-bar neutral">
+              <span>Neutral</span>
+              <div><i id="sentiment-neutral"></i></div>
+            </div>
+            <div class="sentiment-bar negative">
+              <span>Negative</span>
+              <div><i id="sentiment-negative"></i></div>
+            </div>
+          </article>
+        </section>
+
+        <section id="search" class="card reveal search-section">
+          <div class="section-head">
+            <h4>Keyword Search</h4>
+            <span class="chip">Live API Query</span>
+          </div>
+
+          <form id="search-form" class="search-form">
+            <input id="search-input" type="text" placeholder="Search news by keyword..." required minlength="2" />
+            <button type="submit">Search</button>
+          </form>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Source</th>
+                  <th>Sentiment</th>
+                  <th>Trend Score</th>
+                </tr>
+              </thead>
+              <tbody id="search-results">
+                <tr>
+                  <td colspan="4" class="muted">Run a search to see results.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>

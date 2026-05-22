@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: ai-market-intelligence-api
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    autoDeploy: true
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DB
+        value: market_intel
+      - key: NEWS_API_KEY
+        sync: false
+      - key: NEWS_API_BASE_URL
+        value: https://newsapi.org/v2
+      - key: CACHE_TTL_SECONDS
+        value: "300"
+      - key: DEFAULT_PAGE_SIZE
+        value: "20"
+      - key: MAX_PAGE_SIZE
+        value: "100"
