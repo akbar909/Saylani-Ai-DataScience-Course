@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Camera, 
-  Upload, 
-  Trash2, 
-  Plus, 
-  Play, 
-  Pause, 
-  Sliders, 
-  Cpu, 
-  CheckCircle, 
-  AlertCircle, 
-  RefreshCw, 
-  X, 
+import {
+  Camera,
+  Upload,
+  Trash2,
+  Plus,
+  Play,
+  Pause,
+  Sliders,
+  Cpu,
+  CheckCircle,
+  AlertCircle,
+  RefreshCw,
+  X,
   ChevronRight,
   Sparkles,
   Info
@@ -25,6 +25,8 @@ function App() {
     { id: '1', name: 'Class 1', sampleCount: 0 },
     { id: '2', name: 'Class 2', sampleCount: 0 }
   ]);
+  const [editingClassId, setEditingClassId] = useState(null);
+  const [editingClassName, setEditingClassName] = useState('');
   const [isTraining, setIsTraining] = useState(false);
   const [isTrained, setIsTrained] = useState(false);
   const [trainingStatus, setTrainingStatus] = useState('');
@@ -55,7 +57,7 @@ function App() {
 
   // Sync state from backend on mount
   useEffect(() => {
-    fetchStatus();
+    fetchStatus(true);
     return () => {
       // Clean up all streams and intervals on unmount
       stopAllWebcams();
@@ -64,21 +66,55 @@ function App() {
     };
   }, []);
 
-  const fetchStatus = async () => {
+  const fetchStatus = async (isInitial = false) => {
     try {
       const res = await fetch(`${API_BASE_URL}/status`);
       if (res.ok) {
         const data = await res.json();
         setIsTrained(data.trained);
-        
+
         // Map backend classes to state
-        if (data.classes && Object.keys(data.classes).length > 0) {
-          const loadedClasses = Object.entries(data.classes).map(([name, count], index) => ({
-            id: String(index + 1),
-            name: name,
-            sampleCount: count
-          }));
-          setClasses(loadedClasses);
+        if (data.classes) {
+          if (isInitial && Object.keys(data.classes).length > 0) {
+            // Initial load: overwrite default classes with what's on the backend
+            const loadedClasses = Object.entries(data.classes).map(([name, count], index) => ({
+              id: String(index + 1),
+              name: name,
+              sampleCount: count
+            }));
+            setClasses(loadedClasses);
+          } else if (!isInitial) {
+            // Incremental update: merge backend counts into local state
+            setClasses(prevClasses => {
+              const matchedBackendNames = new Set();
+              
+              // Update local classes with backend counts
+              const updatedClasses = prevClasses.map(c => {
+                if (data.classes.hasOwnProperty(c.name)) {
+                  matchedBackendNames.add(c.name);
+                  return { ...c, sampleCount: data.classes[c.name] };
+                }
+                return { ...c, sampleCount: 0 };
+              });
+              
+              // Add any classes from backend that aren't in local state
+              let nextId = updatedClasses.length > 0 
+                ? Math.max(...updatedClasses.map(c => parseInt(c.id))) + 1 
+                : 1;
+                
+              Object.entries(data.classes).forEach(([name, count]) => {
+                if (!matchedBackendNames.has(name)) {
+                  updatedClasses.push({
+                    id: String(nextId++),
+                    name: name,
+                    sampleCount: count
+                  });
+                }
+              });
+              
+              return updatedClasses;
+            });
+          }
         }
       }
     } catch (err) {
@@ -172,8 +208,8 @@ function App() {
     stopAllWebcams();
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: 320, height: 240, facingMode: 'user' } 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 320, height: 240, facingMode: 'user' }
       });
       streamsRef.current[id] = stream;
       setWebcamActiveId(id);
@@ -205,15 +241,15 @@ function App() {
 
     const captureFrameAndUpload = () => {
       if (!videoElement || videoElement.paused || videoElement.ended) return;
-      
+
       // Draw frame to square canvas
       ctx.drawImage(videoElement, 0, 0, canvas.width, canvas.height);
-      
+
       // Convert to blob and upload
       canvas.toBlob(async (blob) => {
         if (!blob) return;
         const file = new File([blob], `frame-${Date.now()}.jpg`, { type: 'image/jpeg' });
-        
+
         const formData = new FormData();
         formData.append('class_name', className);
         formData.append('files', file);
@@ -307,7 +343,7 @@ function App() {
   // Reset entire application (all classes, models, files deleted)
   const handleResetApp = async () => {
     if (!confirm("Are you sure you want to RESET? This will delete ALL classes, image samples, and trained models!")) return;
-    
+
     stopAllWebcams();
     stopInference();
 
@@ -396,7 +432,7 @@ function App() {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 320, height: 240, facingMode: 'user' }
         });
-        
+
         if (inferenceVideoRef.current) {
           inferenceVideoRef.current.srcObject = stream;
           inferenceVideoRef.current.play().catch(e => console.error(e));
@@ -516,9 +552,9 @@ function App() {
               </h1>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-4">
-            <button 
+            <button
               onClick={handleResetApp}
               className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-700 transition duration-200"
             >
@@ -534,7 +570,7 @@ function App() {
 
       {/* Workspace Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 z-10">
-        
+
         {/* LEFT COLUMN: Classes Panel (5 cols) */}
         <section className="lg:col-span-5 flex flex-col gap-6">
           <div className="flex justify-between items-center">
@@ -544,7 +580,7 @@ function App() {
               </h2>
               <p className="text-sm text-slate-400">Define your classes and upload/record sample images.</p>
             </div>
-            <button 
+            <button
               onClick={handleAddClass}
               className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-md shadow-indigo-600/15 active:scale-95"
             >
@@ -554,20 +590,28 @@ function App() {
 
           <div className="flex flex-col gap-5 overflow-y-auto max-h-[70vh] pr-2">
             {classes.map((c) => (
-              <div 
-                key={c.id} 
+              <div
+                key={c.id}
                 className="bg-slate-900/40 backdrop-blur-sm border border-slate-900 rounded-xl p-5 shadow-sm hover:border-slate-800 transition duration-200"
               >
                 {/* Class Header */}
                 <div className="flex justify-between items-center mb-4 gap-4">
-                  <input 
-                    type="text" 
-                    value={c.name}
-                    onChange={(e) => {
-                      const updated = classes.map(item => item.id === c.id ? { ...item, name: e.target.value } : item);
-                      setClasses(updated);
+                  <input
+                    type="text"
+                    value={editingClassId === c.id ? editingClassName : c.name}
+                    onFocus={() => {
+                      setEditingClassId(c.id);
+                      setEditingClassName(c.name);
                     }}
-                    onBlur={(e) => handleRenameClass(c.id, c.name, e.target.value)}
+                    onChange={(e) => {
+                      setEditingClassName(e.target.value);
+                    }}
+                    onBlur={() => {
+                      if (editingClassId === c.id) {
+                        handleRenameClass(c.id, c.name, editingClassName);
+                        setEditingClassId(null);
+                      }
+                    }}
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
                         e.target.blur();
@@ -580,7 +624,7 @@ function App() {
                       {c.sampleCount} samples
                     </span>
                     {classes.length > 2 && (
-                      <button 
+                      <button
                         onClick={() => handleDeleteClass(c.id, c.name)}
                         className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition duration-150"
                         title="Delete class"
@@ -597,13 +641,13 @@ function App() {
                   <div className="flex flex-col gap-2">
                     {webcamActiveId === c.id ? (
                       <div className="relative rounded-lg overflow-hidden bg-black border border-slate-800 aspect-video flex items-center justify-center">
-                        <video 
+                        <video
                           ref={el => videoRefs.current[c.id] = el}
                           className="w-full h-full object-cover transform -scale-x-100"
                           muted
                           playsInline
                         />
-                        <button 
+                        <button
                           onClick={() => handleToggleWebcam(c.id, false)}
                           className="absolute top-2 right-2 p-1 rounded-full bg-black/60 hover:bg-black text-white transition"
                           title="Turn off camera"
@@ -612,7 +656,7 @@ function App() {
                         </button>
                       </div>
                     ) : (
-                      <button 
+                      <button
                         onClick={() => handleToggleWebcam(c.id, true)}
                         className="flex flex-col items-center justify-center gap-2 p-5 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800/50 hover:border-slate-700 text-slate-300 transition duration-200 aspect-video"
                       >
@@ -622,17 +666,16 @@ function App() {
                     )}
 
                     {webcamActiveId === c.id && (
-                      <button 
+                      <button
                         onMouseDown={() => startRecording(c.id, c.name)}
                         onMouseUp={stopRecording}
                         onMouseLeave={stopRecording}
                         onTouchStart={() => startRecording(c.id, c.name)}
                         onTouchEnd={stopRecording}
-                        className={`w-full py-2.5 rounded-lg font-bold text-sm text-center select-none transition-all duration-150 ${
-                          isRecording 
-                            ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/20 animate-pulse' 
-                            : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/15'
-                        }`}
+                        className={`w-full py-2.5 rounded-lg font-bold text-sm text-center select-none transition-all duration-150 ${isRecording
+                          ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-lg shadow-rose-600/20 animate-pulse'
+                          : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/15'
+                          }`}
                       >
                         {isRecording ? 'Recording Frames...' : 'Hold to Record'}
                       </button>
@@ -644,17 +687,17 @@ function App() {
                     <label className="flex flex-col items-center justify-center gap-2 p-5 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:bg-slate-800/50 hover:border-slate-700 text-slate-300 transition duration-200 cursor-pointer aspect-video">
                       <Upload className="w-6 h-6 text-purple-400" />
                       <span className="text-sm font-semibold">Upload Images</span>
-                      <input 
-                        type="file" 
-                        multiple 
+                      <input
+                        type="file"
+                        multiple
                         accept="image/*"
                         onChange={(e) => handleFileUpload(c.id, c.name, e.target.files)}
-                        className="hidden" 
+                        className="hidden"
                       />
                     </label>
 
                     {c.sampleCount > 0 && (
-                      <button 
+                      <button
                         onClick={() => handleClearClassSamples(c.id, c.name)}
                         className="w-full py-2.5 rounded-lg font-bold text-sm text-slate-400 bg-slate-950 border border-slate-800 hover:bg-slate-900 hover:text-rose-400 transition"
                       >
@@ -680,7 +723,7 @@ function App() {
           <div className="bg-slate-900/40 backdrop-blur-sm border border-slate-900 rounded-xl p-5 flex flex-col gap-5">
             {/* Hyperparameter Settings */}
             <div className="border border-slate-800 rounded-lg overflow-hidden bg-slate-950/40">
-              <button 
+              <button
                 onClick={() => setShowAdvanced(!showAdvanced)}
                 className="w-full px-4 py-3 flex justify-between items-center text-sm font-bold text-slate-300 hover:bg-slate-900 transition"
               >
@@ -697,10 +740,10 @@ function App() {
                       <span className="text-slate-400">Regularization (C)</span>
                       <span className="text-white font-mono">{cValue}</span>
                     </div>
-                    <input 
-                      type="range" 
-                      min="0.01" 
-                      max="10.0" 
+                    <input
+                      type="range"
+                      min="0.01"
+                      max="10.0"
                       step="0.05"
                       value={cValue}
                       onChange={(e) => setCValue(parseFloat(e.target.value))}
@@ -714,10 +757,10 @@ function App() {
                       <span className="text-slate-400">Max Iterations</span>
                       <span className="text-white font-mono">{maxIter}</span>
                     </div>
-                    <input 
-                      type="range" 
-                      min="100" 
-                      max="5000" 
+                    <input
+                      type="range"
+                      min="100"
+                      max="5000"
                       step="100"
                       value={maxIter}
                       onChange={(e) => setMaxIter(parseInt(e.target.value))}
@@ -739,14 +782,13 @@ function App() {
                 </div>
               </div>
             ) : (
-              <button 
+              <button
                 onClick={handleTrainModel}
                 disabled={classes.filter(c => c.sampleCount > 0).length < 2}
-                className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition duration-200 ${
-                  classes.filter(c => c.sampleCount > 0).length < 2
-                    ? 'bg-slate-900 border border-slate-800 text-slate-600 cursor-not-allowed'
-                    : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/15'
-                }`}
+                className={`w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2 transition duration-200 ${classes.filter(c => c.sampleCount > 0).length < 2
+                  ? 'bg-slate-900 border border-slate-800 text-slate-600 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/15'
+                  }`}
               >
                 <Cpu className="w-5 h-5" /> Train Model
               </button>
@@ -805,26 +847,24 @@ function App() {
             </div>
           ) : (
             <div className="bg-slate-900/40 backdrop-blur-sm border border-slate-900 rounded-xl p-5 flex flex-col gap-5">
-              
+
               {/* Tabs for Mode */}
               <div className="flex p-1 bg-slate-950 border border-slate-900 rounded-lg">
-                <button 
+                <button
                   onClick={() => handleInferenceModeChange('webcam')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-md transition ${
-                    inferenceMode === 'webcam' 
-                      ? 'bg-slate-900 text-white border border-slate-800/80 shadow' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition ${inferenceMode === 'webcam'
+                    ? 'bg-slate-900 text-white border border-slate-800/80 shadow'
+                    : 'text-slate-400 hover:text-white'
+                    }`}
                 >
                   Live Webcam
                 </button>
-                <button 
+                <button
                   onClick={() => handleInferenceModeChange('file')}
-                  className={`flex-1 py-2 text-xs font-bold rounded-md transition ${
-                    inferenceMode === 'file' 
-                      ? 'bg-slate-900 text-white border border-slate-800/80 shadow' 
-                      : 'text-slate-400 hover:text-white'
-                  }`}
+                  className={`flex-1 py-2 text-xs font-bold rounded-md transition ${inferenceMode === 'file'
+                    ? 'bg-slate-900 text-white border border-slate-800/80 shadow'
+                    : 'text-slate-400 hover:text-white'
+                    }`}
                 >
                   Image Upload
                 </button>
@@ -834,13 +874,13 @@ function App() {
               {inferenceMode === 'webcam' ? (
                 <div className="flex flex-col gap-3">
                   <div className="relative rounded-xl overflow-hidden bg-black border border-slate-850 aspect-video flex items-center justify-center shadow-inner">
-                    <video 
+                    <video
                       ref={inferenceVideoRef}
                       className="w-full h-full object-cover transform -scale-x-100"
                       muted
                       playsInline
                     />
-                    
+
                     {/* Hidden canvas for capturing frame blobs */}
                     <canvas ref={inferenceCanvasRef} className="hidden" />
 
@@ -852,13 +892,12 @@ function App() {
                     )}
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => handleToggleInference(!inferenceActive)}
-                    className={`w-full py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition duration-200 ${
-                      inferenceActive 
-                        ? 'bg-rose-600/10 hover:bg-rose-600/15 border border-rose-500/20 text-rose-400' 
-                        : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/15'
-                    }`}
+                    className={`w-full py-2.5 rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition duration-200 ${inferenceActive
+                      ? 'bg-rose-600/10 hover:bg-rose-600/15 border border-rose-500/20 text-rose-400'
+                      : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-600/15'
+                      }`}
                   >
                     {inferenceActive ? (
                       <>
@@ -875,9 +914,9 @@ function App() {
                 <div className="flex flex-col gap-3">
                   <label className="flex flex-col items-center justify-center gap-2.5 p-6 rounded-xl bg-slate-950/50 border border-slate-900 hover:bg-slate-900/40 hover:border-slate-850 text-slate-400 transition cursor-pointer aspect-video relative overflow-hidden group">
                     {inferencePreview ? (
-                      <img 
-                        src={inferencePreview} 
-                        alt="Test preview" 
+                      <img
+                        src={inferencePreview}
+                        alt="Test preview"
                         className="absolute inset-0 w-full h-full object-contain p-2"
                       />
                     ) : (
@@ -889,11 +928,11 @@ function App() {
                         </div>
                       </>
                     )}
-                    <input 
-                      type="file" 
+                    <input
+                      type="file"
                       accept="image/*"
                       onChange={handleInferenceFileChange}
-                      className="hidden" 
+                      className="hidden"
                     />
                   </label>
                 </div>
@@ -910,7 +949,7 @@ function App() {
                     {predictions.map(({ class_name, probability }) => {
                       const isWinner = class_name === predictionWinner;
                       const pct = Math.round(probability * 100);
-                      
+
                       return (
                         <div key={class_name} className="flex flex-col gap-1.5">
                           <div className="flex justify-between text-sm font-semibold">
@@ -922,14 +961,13 @@ function App() {
                               {pct}%
                             </span>
                           </div>
-                          
+
                           <div className="h-3.5 w-full bg-slate-950 rounded-full border border-slate-900 overflow-hidden relative p-[2px]">
-                            <div 
-                              className={`h-full rounded-full transition-all duration-300 ${
-                                isWinner 
-                                  ? 'bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]' 
-                                  : 'bg-slate-800'
-                              }`}
+                            <div
+                              className={`h-full rounded-full transition-all duration-300 ${isWinner
+                                ? 'bg-gradient-to-r from-indigo-500 to-purple-500 shadow-[0_0_8px_rgba(99,102,241,0.5)]'
+                                : 'bg-slate-800'
+                                }`}
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -937,7 +975,7 @@ function App() {
                       );
                     })}
                   </div>
-                  
+
                   {predictionWinner && (
                     <div className="mt-2 text-center p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/15">
                       <span className="text-xs text-slate-400">Classified Target:</span>
@@ -951,9 +989,9 @@ function App() {
         </section>
       </main>
 
-        <footer className="max-w-7xl w-full mx-auto px-6 py-6 border-t border-slate-950 text-center text-xs text-slate-600 font-medium tracking-wide">
-          NeuralLab and Teachable Machine core architectures are built using local PyTorch frameworks and React.
-        </footer>
+      <footer className="max-w-7xl w-full mx-auto px-6 py-6 border-t border-slate-950 text-center text-xs text-slate-600 font-medium tracking-wide">
+        NeuralLab and Teachable Machine core architectures are built using local PyTorch frameworks and React.
+      </footer>
     </div>
   );
 }
