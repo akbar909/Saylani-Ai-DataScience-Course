@@ -541,7 +541,7 @@ function App() {
 
       {/* Main Header */}
       <header className="border-b border-slate-900 bg-slate-950/70 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
               <Cpu className="w-5 h-5 text-white animate-pulse" />
@@ -553,7 +553,7 @@ function App() {
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-4">
             <button
               onClick={handleResetApp}
               className="px-4 py-2 text-sm font-semibold rounded-lg bg-slate-900 border border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white hover:border-slate-700 transition duration-200"
@@ -569,11 +569,11 @@ function App() {
       </header>
 
       {/* Workspace Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 z-10">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 z-10">
 
         {/* LEFT COLUMN: Classes Panel (5 cols) */}
         <section className="lg:col-span-5 flex flex-col gap-6">
-          <div className="flex justify-between items-center">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div>
               <h2 className="text-xl font-semibold text-white tracking-tight flex items-center gap-2 m-0">
                 1. Gather Dataset
@@ -582,7 +582,7 @@ function App() {
             </div>
             <button
               onClick={handleAddClass}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-md shadow-indigo-600/15 active:scale-95"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-all duration-200 shadow-md shadow-indigo-600/15 active:scale-95 w-full sm:w-auto justify-center"
             >
               <Plus className="w-4 h-4" /> Add Class
             </button>
@@ -636,7 +636,7 @@ function App() {
                 </div>
 
                 {/* Input Gathering Options */}
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Option 1: Webcam Feed */}
                   <div className="flex flex-col gap-2">
                     {webcamActiveId === c.id ? (
