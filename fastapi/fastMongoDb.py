@@ -8,7 +8,7 @@ app = FastAPI()
 
 # MongoDB setup
 # Note: In a real app, keep your connection string in an environment variable!
-mongo_client = MongoClient("mongodb+srv://akbar909:datasciencesaylani@cluster0.uum0vre.mongodb.net/?appName=Cluster0")
+mongo_client = MongoClient("")
 db = mongo_client["todo_app"]
 todos_collection = db["todos"]
 
