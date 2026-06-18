@@ -17,7 +17,7 @@ import {
   Info
 } from 'lucide-react';
 
-const API_BASE_URL = 'http://localhost:8000';
+const API_BASE_URL = 'https://akbar909-neural-lab-backend.hf.space';
 
 function App() {
   // Application state
