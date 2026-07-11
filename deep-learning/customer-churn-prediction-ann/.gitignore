@@ -1,0 +1,36 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# ---- Virtual environments ----
+venv/
+env/
+ENV/
+.venv/
+
+# ---- Jupyter Notebook ----
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ---- Environment / secrets ----
+.env
+*.env
+
+# ---- OS files ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- IDE / editor ----
+.vscode/
+.idea/
+*.swp
+
+# ---- Trained models (uncomment to exclude large model files) ----
+# *.keras
+# *.h5
+
+# ---- Datasets (uncomment if you don't want to commit raw data) ----
+# *.csv
