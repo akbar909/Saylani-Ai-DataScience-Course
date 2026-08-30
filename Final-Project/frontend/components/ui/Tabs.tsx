@@ -1,0 +1,1 @@
+export function Tabs({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (tab: string) => void }) { return <div className="mode-tabs">{tabs.map((tab)=><button className={active===tab?"mode-active":""} key={tab} onClick={()=>onChange(tab)}>{tab}</button>)}</div>; }

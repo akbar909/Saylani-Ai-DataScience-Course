@@ -1,0 +1,1 @@
+export default function AboutPage(){return <main className="marketing-page"><span className="eyebrow">About Ledgerly</span><h1>Finance tools that explain themselves.</h1><p className="marketing-copy">Ledgerly brings forecasting, anomaly detection, and document intelligence into one calm workspace for small finance teams.</p></main>}

@@ -1,0 +1,1 @@
+export function AgentActivityLog({ entries = [] }: { entries?: string[] }) { return <div className="activity-log">{entries.length ? entries.map((entry)=><p key={entry}>{entry}</p>) : <p className="empty-copy">No agent activity has been recorded.</p>}</div>; }

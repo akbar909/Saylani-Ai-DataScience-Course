@@ -1,0 +1,1 @@
+export function Modal({ open, title, children, onClose }: { open: boolean; title: string; children: React.ReactNode; onClose: () => void }) { if (!open) return null; return <div className="modal-backdrop" role="dialog"><div className="panel modal-panel"><button className="text-link" onClick={onClose}>Close</button><h2>{title}</h2>{children}</div></div>; }

@@ -1,0 +1,2 @@
+import Link from "next/link";
+export default function ForgotPasswordPage(){return <main className="auth-page"><div className="auth-card"><span className="eyebrow">Account recovery</span><h1>Reset access.</h1><p>Enter your email and we&apos;ll send recovery instructions when auth is connected.</p><form className="auth-form"><label>Email<input type="email" required placeholder="you@company.com" /></label><button className="primary-button">Send instructions</button></form><Link href="/login" className="text-link">Back to sign in</Link></div></main>}

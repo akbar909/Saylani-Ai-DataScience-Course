@@ -1,0 +1,1 @@
+export function ForecastChart({ values = [] }: { values?: number[] }) { return <div className="chart-area" aria-label="Forecast chart"><div className="chart-line" /><div className="chart-fill" /><div className="chart-labels">{(values.length ? values : [1,2,3,4,5,6]).map((value,index)=><span key={`${value}-${index}`}>{index + 1}</span>)}</div></div>; }

@@ -1,0 +1,1 @@
+export function TrendLine({ points = [] }: { points?: number[] }) { return <div className="trend-line" aria-label="Trend line">{points.length ? points.join(" · ") : "No trend data available"}</div>; }
